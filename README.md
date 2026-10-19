@@ -1,4 +1,4 @@
-# Uniform Point Sampling on a Sphere
+# Sphere Surface Sampler
 
 [![CI](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml)
 
