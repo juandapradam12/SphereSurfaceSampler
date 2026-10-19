@@ -38,10 +38,10 @@ Full derivation: [docs/methodology.md](docs/methodology.md).
 ## What equal-area sampling looks like
 
 With $N = 5000$ points on the unit sphere, the cloud covers the surface
-without a visible polar excess from every angle. Color encodes $z$.
+without a visible polar excess. Color encodes $z$.
 
 <p align="center">
-  <img src="examples/sphere.gif" alt="Rotating equal-area samples on the unit sphere" width="480"/>
+  <img src="examples/sphere.png" alt="Equal-area samples on the unit sphere" width="520"/>
 </p>
 
 ## What goes wrong with naive $\theta$
