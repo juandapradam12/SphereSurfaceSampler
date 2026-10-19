@@ -17,8 +17,9 @@ R        ?= 1.0
 SEED     ?= 42
 POINTS   ?= $(RESULTS)/points.dat
 FIGURE   ?= $(RESULTS)/sphere.png
+POINTS_NAIVE ?= $(RESULTS)/points_naive.dat
 
-.PHONY: all sample plot run clean example help
+.PHONY: all sample plot validate run test example clean help
 
 all: $(SAMPLER)
 
@@ -35,28 +36,62 @@ $(SAMPLER): $(OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 sample: $(SAMPLER) | $(RESULTS)
-	$(SAMPLER) -n $(N) -r $(R) -s $(SEED) -o $(POINTS)
+	$(SAMPLER) -n $(N) -r $(R) -s $(SEED) -m equal-area -o $(POINTS)
+	$(SAMPLER) -n $(N) -r $(R) -s $(SEED) -m naive -o $(POINTS_NAIVE)
 
 plot: $(POINTS)
 	python3 src/python/plot_sphere.py -i $(POINTS) -o $(FIGURE)
 
-run: sample plot
+validate: $(POINTS) $(POINTS_NAIVE)
+	python3 src/python/validate_uniformity.py \
+		--equal-area $(POINTS) \
+		--naive $(POINTS_NAIVE) \
+		--radius $(R) \
+		--figure $(RESULTS)/uniformity.png \
+		--report $(RESULTS)/uniformity.json
+
+run: sample plot validate
+
+test: $(SAMPLER) | $(RESULTS)
+	$(SAMPLER) -n 3000 -r 1.25 -s 7 -m equal-area -o $(RESULTS)/test_eq.dat
+	$(SAMPLER) -n 3000 -r 1.25 -s 7 -m naive -o $(RESULTS)/test_naive.dat
+	python3 src/python/validate_uniformity.py \
+		--equal-area $(RESULTS)/test_eq.dat \
+		--naive $(RESULTS)/test_naive.dat \
+		--radius 1.25 \
+		--figure $(RESULTS)/test_uniformity.png \
+		--report $(RESULTS)/test_uniformity.json
+	@echo "All smoke checks passed."
 
 example: $(SAMPLER) | $(EXAMPLES)
-	$(SAMPLER) -n 5000 -r 1.0 -s 42 -o $(EXAMPLES)/points.dat
+	$(SAMPLER) -n 5000 -r 1.0 -s 42 -m equal-area -o $(EXAMPLES)/points.dat
+	$(SAMPLER) -n 5000 -r 1.0 -s 42 -m naive -o $(EXAMPLES)/points_naive.dat
 	python3 src/python/plot_sphere.py \
 		-i $(EXAMPLES)/points.dat \
 		-o $(EXAMPLES)/sphere.png \
 		--title "Uniform samples on the unit sphere (N=5000)"
+	python3 src/python/validate_uniformity.py \
+		--equal-area $(EXAMPLES)/points.dat \
+		--naive $(EXAMPLES)/points_naive.dat \
+		--radius 1.0 \
+		--figure $(EXAMPLES)/uniformity.png \
+		--report $(EXAMPLES)/uniformity.json
 
 clean:
-	rm -rf $(BIN_DIR) $(RESULTS)/points.dat $(RESULTS)/sphere.png
+	rm -rf $(BIN_DIR) \
+		$(RESULTS)/points.dat $(RESULTS)/points_naive.dat \
+		$(RESULTS)/sphere.png $(RESULTS)/uniformity.png \
+		$(RESULTS)/uniformity.json \
+		$(RESULTS)/test_eq.dat $(RESULTS)/test_naive.dat \
+		$(RESULTS)/test_uniformity.png $(RESULTS)/test_uniformity.json
 
 help:
 	@echo "Targets:"
-	@echo "  all      Build the C sampler binary"
-	@echo "  sample   Generate point cloud (N=$(N), R=$(R), SEED=$(SEED))"
-	@echo "  plot     Render 3D scatter from $(POINTS)"
-	@echo "  run      sample + plot"
-	@echo "  example  Refresh committed example under examples/"
-	@echo "  clean    Remove build artifacts and generated results"
+	@echo "  all       Build the C sampler binary"
+	@echo "  sample    Generate equal-area and naive point clouds"
+	@echo "  plot      Render 3D scatter from equal-area samples"
+	@echo "  validate  Radius + u=z/R uniformity checks and figure"
+	@echo "  run       sample + plot + validate"
+	@echo "  test      Smoke test (build + statistical checks)"
+	@echo "  example   Refresh committed examples/"
+	@echo "  clean     Remove build artifacts and generated results"

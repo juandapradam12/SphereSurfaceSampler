@@ -34,20 +34,10 @@ static double rng_uniform01(void)
     return (rng_next_u64() >> 11) * (1.0 / 9007199254740992.0);
 }
 
-static double sample_u(void)
+static Point3D sample_equal_area(double radius)
 {
-    return 2.0 * rng_uniform01() - 1.0;
-}
-
-static double sample_phi(void)
-{
-    return rng_uniform01() * (2.0 * M_PI);
-}
-
-static Point3D sample_on_sphere(double radius)
-{
-    const double u = sample_u();
-    const double phi = sample_phi();
+    const double u = 2.0 * rng_uniform01() - 1.0;
+    const double phi = rng_uniform01() * (2.0 * M_PI);
     const double rho = radius * sqrt(1.0 - u * u);
 
     Point3D p;
@@ -57,9 +47,26 @@ static Point3D sample_on_sphere(double radius)
     return p;
 }
 
-PointCloud *sphere_sample(size_t count, double radius, long seed)
+static Point3D sample_naive_theta(double radius)
+{
+    const double theta = rng_uniform01() * M_PI;
+    const double phi = rng_uniform01() * (2.0 * M_PI);
+    const double s = sin(theta);
+
+    Point3D p;
+    p.x = radius * s * cos(phi);
+    p.y = radius * s * sin(phi);
+    p.z = radius * cos(theta);
+    return p;
+}
+
+PointCloud *sphere_sample(size_t count, double radius, long seed,
+                          SampleMethod method)
 {
     if (count == 0 || radius <= 0.0) {
+        return NULL;
+    }
+    if (method != SAMPLE_EQUAL_AREA && method != SAMPLE_NAIVE_THETA) {
         return NULL;
     }
 
@@ -76,10 +83,13 @@ PointCloud *sphere_sample(size_t count, double radius, long seed)
 
     cloud->count = count;
     cloud->radius = radius;
+    cloud->method = method;
     rng_seed((uint64_t)seed);
 
     for (size_t i = 0; i < count; i++) {
-        cloud->points[i] = sample_on_sphere(radius);
+        cloud->points[i] = (method == SAMPLE_EQUAL_AREA)
+                               ? sample_equal_area(radius)
+                               : sample_naive_theta(radius);
     }
 
     return cloud;

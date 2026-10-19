@@ -8,6 +8,7 @@ build/
 results/*.dat
 results/*.png
 results/*.pdf
+results/*.json
 !examples/**
 
 # Python

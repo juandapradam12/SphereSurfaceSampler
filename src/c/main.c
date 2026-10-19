@@ -10,6 +10,7 @@ typedef struct {
     double radius;
     long seed;
     const char *output;
+    SampleMethod method;
 } Config;
 
 static void print_usage(const char *prog)
@@ -17,15 +18,34 @@ static void print_usage(const char *prog)
     fprintf(stderr,
             "Usage: %s [options]\n"
             "\n"
-            "Uniform random points on a sphere surface.\n"
+            "Random points on a sphere surface.\n"
             "\n"
             "Options:\n"
             "  -n, --count   N     Number of points (default: 5000)\n"
             "  -r, --radius  R     Sphere radius     (default: 1.0)\n"
             "  -s, --seed    S     RNG seed          (default: time-based)\n"
             "  -o, --output  PATH  Output .dat path  (default: results/points.dat)\n"
+            "  -m, --method  NAME  equal-area | naive (default: equal-area)\n"
             "  -h, --help          Show this help\n",
             prog);
+}
+
+static int parse_method(const char *value, SampleMethod *method)
+{
+    if (strcmp(value, "equal-area") == 0 || strcmp(value, "uniform") == 0) {
+        *method = SAMPLE_EQUAL_AREA;
+        return 0;
+    }
+    if (strcmp(value, "naive") == 0 || strcmp(value, "naive-theta") == 0) {
+        *method = SAMPLE_NAIVE_THETA;
+        return 0;
+    }
+    return -1;
+}
+
+static const char *method_name(SampleMethod method)
+{
+    return method == SAMPLE_EQUAL_AREA ? "equal-area" : "naive";
 }
 
 static int parse_args(int argc, char **argv, Config *cfg)
@@ -34,6 +54,7 @@ static int parse_args(int argc, char **argv, Config *cfg)
     cfg->radius = 1.0;
     cfg->seed = (long)time(NULL);
     cfg->output = "results/points.dat";
+    cfg->method = SAMPLE_EQUAL_AREA;
 
     for (int i = 1; i < argc; i++) {
         const char *arg = argv[i];
@@ -47,7 +68,8 @@ static int parse_args(int argc, char **argv, Config *cfg)
         if ((strcmp(arg, "-n") == 0 || strcmp(arg, "--count") == 0) ||
             (strcmp(arg, "-r") == 0 || strcmp(arg, "--radius") == 0) ||
             (strcmp(arg, "-s") == 0 || strcmp(arg, "--seed") == 0) ||
-            (strcmp(arg, "-o") == 0 || strcmp(arg, "--output") == 0)) {
+            (strcmp(arg, "-o") == 0 || strcmp(arg, "--output") == 0) ||
+            (strcmp(arg, "-m") == 0 || strcmp(arg, "--method") == 0)) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "Missing value for %s\n", arg);
                 return -1;
@@ -84,6 +106,12 @@ static int parse_args(int argc, char **argv, Config *cfg)
             cfg->seed = s;
         } else if (strcmp(arg, "-o") == 0 || strcmp(arg, "--output") == 0) {
             cfg->output = value;
+        } else if (strcmp(arg, "-m") == 0 || strcmp(arg, "--method") == 0) {
+            if (parse_method(value, &cfg->method) != 0) {
+                fprintf(stderr, "Invalid method: %s (use equal-area|naive)\n",
+                        value);
+                return -1;
+            }
         }
     }
 
@@ -98,7 +126,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    PointCloud *cloud = sphere_sample(cfg.count, cfg.radius, cfg.seed);
+    PointCloud *cloud =
+        sphere_sample(cfg.count, cfg.radius, cfg.seed, cfg.method);
     if (cloud == NULL) {
         fprintf(stderr, "Failed to sample points (check count/radius/memory).\n");
         return 1;
@@ -110,8 +139,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    printf("Wrote %zu points (R=%.6g, seed=%ld) to %s\n",
-           cloud->count, cloud->radius, cfg.seed, cfg.output);
+    printf("Wrote %zu points (R=%.6g, seed=%ld, method=%s) to %s\n",
+           cloud->count, cloud->radius, cfg.seed, method_name(cloud->method),
+           cfg.output);
 
     point_cloud_free(cloud);
     return 0;
