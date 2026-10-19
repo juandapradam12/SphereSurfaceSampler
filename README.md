@@ -115,7 +115,3 @@ Design notes: [docs/architecture.md](docs/architecture.md).
 - Library vs. CLI stay separate; `--method equal-area|naive` shares one API.
 - Seeded portable RNG keeps clouds reproducible.
 - Whitespace $x\,y\,z$ files couple C and Python without a shared runtime.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
