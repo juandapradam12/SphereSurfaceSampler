@@ -1,8 +1,8 @@
 # Uniform Point Sampling on a Sphere
 
-[![CI](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml)
+[![CI](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml)
 
-A scientific-computing use case: draw points on a sphere of radius \(R\) that
+A scientific-computing use case: draw points on a sphere of radius $R$ that
 are **uniform with respect to surface area**, show what goes wrong with a
 naive angular draw, and back the claim with a simple statistical check.
 
@@ -12,14 +12,14 @@ Applications in Monte Carlo integration, directional statistics, and graphics
 often need samples from the Haar measure on
 
 $$
-S_R = \bigl\{ (x,y,z) : x^2 + y^2 + z^2 = R^2 \bigr\}.
+S_R = \left\lbrace (x,y,z) : x^2 + y^2 + z^2 = R^2 \right\rbrace.
 $$
 
-Drawing the polar angle \(\theta\) uniformly on \([0,\pi]\) looks natural, but
-it is wrong: ring area scales with \(\sin\theta\), so mass piles up at the
+Drawing the polar angle $\theta$ uniformly on $[0,\pi]$ looks natural, but
+it is wrong: ring area scales with $\sin\theta$, so mass piles up at the
 poles.
 
-The equal-area construction samples \(u = \cos\theta\) instead:
+The equal-area construction samples $u = \cos\theta$ instead:
 
 $$
 u \sim \mathcal{U}[-1,1], \qquad \phi \sim \mathcal{U}[0, 2\pi],
@@ -37,17 +37,17 @@ Full derivation: [docs/methodology.md](docs/methodology.md).
 
 ## What equal-area sampling looks like
 
-With \(N = 5000\) points on the unit sphere, the cloud covers the surface
-without a visible polar excess. Color encodes \(z\).
+With $N = 5000$ points on the unit sphere, the cloud covers the surface
+without a visible polar excess. Color encodes $z$.
 
 <p align="center">
   <img src="examples/sphere.png" alt="Equal-area samples on the unit sphere" width="520"/>
 </p>
 
-## What goes wrong with naive \(\theta\)
+## What goes wrong with naive $\theta$
 
-The same seed and budget, but \(\theta \sim \mathcal{U}[0,\pi]\). Points still
-lie on the sphere, yet density concentrates near \(z = \pm R\).
+The same seed and budget, but $\theta \sim \mathcal{U}[0,\pi]$. Points still
+lie on the sphere, yet density concentrates near $z = \pm R$.
 
 <p align="center">
   <img src="examples/sphere_naive.png" alt="Naive theta samples on the unit sphere" width="520"/>
@@ -55,24 +55,24 @@ lie on the sphere, yet density concentrates near \(z = \pm R\).
 
 ## Evidence in one coordinate
 
-Both clouds satisfy \(\|p_i\| \approx R\). The diagnostic that separates them
-is the marginal of \(u = z/R\):
+Both clouds satisfy $\lVert p_i \rVert \approx R$. The diagnostic that separates
+them is the marginal of $u = z/R$:
 
-- equal-area should match density \(1/2\) on \([-1,1]\)
-- naive \(\theta\) follows \(f_u(u) = 1/(\pi\sqrt{1-u^2})\) (U-shaped)
+- equal-area should match density $1/2$ on $[-1,1]$
+- naive $\theta$ follows $f_u(u) = 1/(\pi\sqrt{1-u^2})$ (U-shaped)
 
 <p align="center">
   <img src="examples/uniformity.png" alt="Equal-area vs naive u=z/R histograms" width="720"/>
 </p>
 
-On this run (\(N=5000\), \(R=1\), seed \(42\)):
+On this run ($N=5000$, $R=1$, seed $42$):
 
-| Method | \(\chi^2/\mathrm{dof}\) for \(u\) vs \(\mathcal{U}[-1,1]\) | On-sphere \(\max\| \|p\|-R\|\) |
-|--------|-------------------------------------------------------------|-------------------------------|
-| Equal-area | \(\approx 1.38\) | \(\sim 10^{-10}\) |
-| Naive \(\theta\) | \(\approx 100\) | \(\sim 10^{-10}\) |
+| Method | $\chi^2/\mathrm{dof}$ for $u$ vs $\mathcal{U}[-1,1]$ | On-sphere max $\lvert \lVert p \rVert - R \rvert$ |
+|--------|------------------------------------------------------|-----------------------------------------------------|
+| Equal-area | $\approx 1.38$ | $\sim 10^{-10}$ |
+| Naive $\theta$ | $\approx 100$ | $\sim 10^{-10}$ |
 
-Same geometry, different measure — the histogram and \(\chi^2\) catch what a
+Same geometry, different measure — the histogram and $\chi^2$ catch what a
 quick glance at a 3D scatter can miss.
 
 ## Run it
@@ -114,8 +114,4 @@ Design notes: [docs/architecture.md](docs/architecture.md).
 
 - Library vs. CLI stay separate; `--method equal-area|naive` shares one API.
 - Seeded portable RNG keeps clouds reproducible.
-- Whitespace \(x\,y\,z\) files couple C and Python without a shared runtime.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+- Whitespace $x\,y\,z$ files couple C and Python without a shared runtime.

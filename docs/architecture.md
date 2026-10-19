@@ -25,8 +25,8 @@ The repository separates **sampling**, **I/O**, **visualization**, and
 |-------|----------------|
 | **Core library** | Allocate a `PointCloud`, fill it (`equal-area` or `naive`), free it, write it to disk. |
 | **CLI** | Parse `-n/-r/-s/-o/-m`, call the library, report status. |
-| **Visualization** | Load an \(N \times 3\) table and render a 3D scatter figure. |
-| **Validation** | Check on-sphere radii and \(\chi^2\) uniformity of \(u=z/R\); optional naive contrast plot. |
+| **Visualization** | Load an $N \times 3$ table and render a 3D scatter figure. |
+| **Validation** | Check on-sphere radii and $\chi^2$ uniformity of $u=z/R$; optional naive contrast plot. |
 | **Build / CI** | `Makefile` orchestrates `sample` → `plot` → `validate`; GitHub Actions runs `make test`. |
 
 ## Data contract
