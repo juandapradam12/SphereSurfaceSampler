@@ -1,0 +1,30 @@
+# Build artifacts
+*.o
+*.x
+bin/
+build/
+
+# Generated data and figures (examples/ keeps committed samples)
+results/*.dat
+results/*.png
+results/*.pdf
+results/*.json
+!examples/**
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/

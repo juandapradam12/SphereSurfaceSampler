@@ -1,0 +1,42 @@
+{
+  "equal_area": {
+    "n_points": 5000,
+    "radius_nominal": 1.0,
+    "radius": {
+      "mean_radius": 1.0000000000005902,
+      "std_radius": 2.886936423318766e-11,
+      "min_radius": 0.9999999999205019,
+      "max_radius": 1.0000000000774254,
+      "max_abs_dev": 8.008826934968738e-11
+    },
+    "u_mean": -0.005224768225700001,
+    "u_std": 0.5733681082996971,
+    "uniformity": {
+      "chi2": 26.216,
+      "dof": 19.0,
+      "chi2_over_dof": 1.3797894736842107,
+      "p_approx": 0.12392204999522435,
+      "mad_from_uniform": 0.0648
+    }
+  },
+  "naive": {
+    "n_points": 5000,
+    "radius_nominal": 1.0,
+    "radius": {
+      "mean_radius": 1.0000000000000462,
+      "std_radius": 2.8516443280242685e-11,
+      "min_radius": 0.999999999925804,
+      "max_radius": 1.0000000000803015,
+      "max_abs_dev": 8.025535791489347e-11
+    },
+    "u_mean": 0.006969490453499999,
+    "u_std": 0.7047799215734801,
+    "uniformity": {
+      "chi2": 1905.616,
+      "dof": 19.0,
+      "chi2_over_dof": 100.29557894736843,
+      "p_approx": 4.561003481212127e-251,
+      "mad_from_uniform": 0.402
+    }
+  }
+}
