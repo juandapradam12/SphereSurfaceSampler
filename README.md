@@ -82,7 +82,6 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 make run                 # sample both methods + plot + validate
-make gif                 # rotating GIF of equal-area samples
 make test                # smoke checks (also run by CI)
 make example             # refresh committed figures under examples/
 ```
@@ -105,7 +104,6 @@ Requires a C11 compiler, `make`, and Python 3.10+ (`numpy`, `matplotlib`).
 include/sphere_sampler.h          Public C API (PointCloud)
 src/c/                            Sampler library + CLI
 src/python/plot_sphere.py         3D visualization
-src/python/animate_sphere.py      Rotating GIF for the README
 src/python/validate_uniformity.py Radius + u=z/R checks
 examples/                         Story figures + sample data
 docs/                             Methodology and architecture
