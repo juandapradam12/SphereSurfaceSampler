@@ -19,7 +19,7 @@ POINTS   ?= $(RESULTS)/points.dat
 FIGURE   ?= $(RESULTS)/sphere.png
 POINTS_NAIVE ?= $(RESULTS)/points_naive.dat
 
-.PHONY: all sample plot validate run test example clean help
+.PHONY: all sample plot gif validate run test example clean help
 
 all: $(SAMPLER)
 
@@ -41,6 +41,9 @@ sample: $(SAMPLER) | $(RESULTS)
 
 plot: $(POINTS)
 	python3 src/python/plot_sphere.py -i $(POINTS) -o $(FIGURE)
+
+gif: $(POINTS)
+	python3 src/python/animate_sphere.py -i $(POINTS) -o $(RESULTS)/sphere.gif
 
 validate: $(POINTS) $(POINTS_NAIVE)
 	python3 src/python/validate_uniformity.py \
@@ -70,6 +73,10 @@ example: $(SAMPLER) | $(EXAMPLES)
 		-i $(EXAMPLES)/points.dat \
 		-o $(EXAMPLES)/sphere.png \
 		--title "Equal-area samples on the unit sphere (N=5000)"
+	python3 src/python/animate_sphere.py \
+		-i $(EXAMPLES)/points.dat \
+		-o $(EXAMPLES)/sphere.gif \
+		--title "Equal-area samples (rotating view)"
 	python3 src/python/plot_sphere.py \
 		-i $(EXAMPLES)/points_naive.dat \
 		-o $(EXAMPLES)/sphere_naive.png \
@@ -84,7 +91,7 @@ example: $(SAMPLER) | $(EXAMPLES)
 clean:
 	rm -rf $(BIN_DIR) \
 		$(RESULTS)/points.dat $(RESULTS)/points_naive.dat \
-		$(RESULTS)/sphere.png $(RESULTS)/uniformity.png \
+		$(RESULTS)/sphere.png $(RESULTS)/sphere.gif $(RESULTS)/uniformity.png \
 		$(RESULTS)/uniformity.json \
 		$(RESULTS)/test_eq.dat $(RESULTS)/test_naive.dat \
 		$(RESULTS)/test_uniformity.png $(RESULTS)/test_uniformity.json
@@ -94,6 +101,7 @@ help:
 	@echo "  all       Build the C sampler binary"
 	@echo "  sample    Generate equal-area and naive point clouds"
 	@echo "  plot      Render 3D scatter from equal-area samples"
+	@echo "  gif       Rotating GIF of equal-area samples"
 	@echo "  validate  Radius + u=z/R uniformity checks and figure"
 	@echo "  run       sample + plot + validate"
 	@echo "  test      Smoke test (build + statistical checks)"

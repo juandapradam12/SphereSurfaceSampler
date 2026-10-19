@@ -11,6 +11,7 @@ The repository separates **sampling**, **I/O**, **visualization**, and
 │   └── main.c                    # CLI entry point
 ├── src/python/
 │   ├── plot_sphere.py            # 3D visualization
+│   ├── animate_sphere.py         # Rotating GIF
 │   └── validate_uniformity.py    # Radius + u=z/R checks
 ├── examples/                     # Committed sample output
 ├── results/                      # Local generated artifacts (gitignored)
