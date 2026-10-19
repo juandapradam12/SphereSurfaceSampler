@@ -69,7 +69,11 @@ example: $(SAMPLER) | $(EXAMPLES)
 	python3 src/python/plot_sphere.py \
 		-i $(EXAMPLES)/points.dat \
 		-o $(EXAMPLES)/sphere.png \
-		--title "Uniform samples on the unit sphere (N=5000)"
+		--title "Equal-area samples on the unit sphere (N=5000)"
+	python3 src/python/plot_sphere.py \
+		-i $(EXAMPLES)/points_naive.dat \
+		-o $(EXAMPLES)/sphere_naive.png \
+		--title "Naive θ samples on the unit sphere (N=5000)"
 	python3 src/python/validate_uniformity.py \
 		--equal-area $(EXAMPLES)/points.dat \
 		--naive $(EXAMPLES)/points_naive.dat \

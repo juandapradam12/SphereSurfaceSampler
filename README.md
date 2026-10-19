@@ -1,38 +1,29 @@
 # Uniform Point Sampling on a Sphere
 
-A small scientific-computing use case: generate a **uniform random distribution
-of points on the surface of a sphere** of arbitrary radius \(R\), visualize the
-cloud, and **validate** the surface measure against a naive baseline.
+[![CI](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml)
 
-This repository modernizes an early coursework prototype into a portfolio-ready
-example with a clear C library boundary, a thin CLI, Python plotting/validation,
-and documented methodology.
+A scientific-computing use case: draw points on a sphere of radius \(R\) that
+are **uniform with respect to surface area**, show what goes wrong with a
+naive angular draw, and back the claim with a simple statistical check.
 
-<p align="center">
-  <img src="examples/sphere.png" alt="Uniform samples on the unit sphere" width="520"/>
-</p>
+## The problem
 
-<p align="center">
-  <img src="examples/uniformity.png" alt="Equal-area vs naive u=z/R histograms" width="720"/>
-</p>
-
-## Why this matters
-
-Uniform sphere sampling shows up in Monte Carlo integration, directional
-statistics, molecular / condensed-matter models, and graphics (environment
-maps, particle systems). Getting the measure right matters: sampling polar
-angle \(\theta\) uniformly produces clustering at the poles; sampling
-\(u = \cos\theta\) uniformly does not.
-
-## Method (short)
-
-Draw independent uniforms
+Applications in Monte Carlo integration, directional statistics, and graphics
+often need samples from the Haar measure on
 
 $$
-u \sim \mathcal{U}[-1,1], \qquad \phi \sim \mathcal{U}[0, 2\pi]
+S_R = \bigl\{ (x,y,z) : x^2 + y^2 + z^2 = R^2 \bigr\}.
 $$
 
-and map them to Cartesian coordinates on the sphere of radius \(R\):
+Drawing the polar angle \(\theta\) uniformly on \([0,\pi]\) looks natural, but
+it is wrong: ring area scales with \(\sin\theta\), so mass piles up at the
+poles.
+
+The equal-area construction samples \(u = \cos\theta\) instead:
+
+$$
+u \sim \mathcal{U}[-1,1], \qquad \phi \sim \mathcal{U}[0, 2\pi],
+$$
 
 $$
 \begin{aligned}
@@ -42,59 +33,62 @@ z &= R\,u.
 \end{aligned}
 $$
 
-The naive baseline draws \(\theta \sim \mathcal{U}[0,\pi]\) instead; then
-\(u=\cos\theta\) follows density \(1/(\pi\sqrt{1-u^2})\) and piles up at the
-poles. Empirical checks use on-sphere radius error and a \(\chi^2\) test of
-\(u=z/R\) against \(\mathcal{U}[-1,1]\).
+Full derivation: [docs/methodology.md](docs/methodology.md).
 
-Full derivation: [docs/methodology.md](docs/methodology.md).  
-Layout and layering: [docs/architecture.md](docs/architecture.md).
+## What equal-area sampling looks like
 
-## Project layout
+With \(N = 5000\) points on the unit sphere, the cloud covers the surface
+without a visible polar excess. Color encodes \(z\).
 
-```
-include/sphere_sampler.h          Public C API (PointCloud)
-src/c/                            Sampler library + CLI
-src/python/plot_sphere.py         3D visualization
-src/python/validate_uniformity.py Radius + uniformity checks
-examples/                         Sample data, sphere + uniformity figures
-docs/                             Methodology and architecture
-.github/workflows/ci.yml          Build + smoke test
-```
+<p align="center">
+  <img src="examples/sphere.png" alt="Equal-area samples on the unit sphere" width="520"/>
+</p>
 
-## Requirements
+## What goes wrong with naive \(\theta\)
 
-- C compiler with C11 support (`cc` / `gcc` / `clang`)
-- `make`
-- Python 3.10+
-- `numpy`, `matplotlib` (see `requirements.txt`)
+The same seed and budget, but \(\theta \sim \mathcal{U}[0,\pi]\). Points still
+lie on the sphere, yet density concentrates near \(z = \pm R\).
+
+<p align="center">
+  <img src="examples/sphere_naive.png" alt="Naive theta samples on the unit sphere" width="520"/>
+</p>
+
+## Evidence in one coordinate
+
+Both clouds satisfy \(\|p_i\| \approx R\). The diagnostic that separates them
+is the marginal of \(u = z/R\):
+
+- equal-area should match density \(1/2\) on \([-1,1]\)
+- naive \(\theta\) follows \(f_u(u) = 1/(\pi\sqrt{1-u^2})\) (U-shaped)
+
+<p align="center">
+  <img src="examples/uniformity.png" alt="Equal-area vs naive u=z/R histograms" width="720"/>
+</p>
+
+On this run (\(N=5000\), \(R=1\), seed \(42\)):
+
+| Method | \(\chi^2/\mathrm{dof}\) for \(u\) vs \(\mathcal{U}[-1,1]\) | On-sphere \(\max\| \|p\|-R\|\) |
+|--------|-------------------------------------------------------------|-------------------------------|
+| Equal-area | \(\approx 1.38\) | \(\sim 10^{-10}\) |
+| Naive \(\theta\) | \(\approx 100\) | \(\sim 10^{-10}\) |
+
+Same geometry, different measure — the histogram and \(\chi^2\) catch what a
+quick glance at a 3D scatter can miss.
+
+## Run it
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+make run                 # sample both methods + plot + validate
+make test                # smoke checks (also run by CI)
+make example             # refresh committed figures under examples/
 ```
 
-## Quick start
-
 ```bash
-make run                 # sample (both methods) + plot + validate
-# or with overrides:
-make run N=8000 R=2.5 SEED=7
-make test                # smoke checks used by CI
-```
-
-Outputs land in `results/` (`points.dat`, `points_naive.dat`, `sphere.png`,
-`uniformity.png`, `uniformity.json`).  
-Refresh the committed demo under `examples/` with `make example`.
-
-### CLI
-
-```bash
-make
-./bin/sphere_sampler --help
 ./bin/sphere_sampler -n 5000 -r 1.0 -s 42 -m equal-area -o results/points.dat
-./bin/sphere_sampler -n 5000 -r 1.0 -s 42 -m naive -o results/points_naive.dat
+./bin/sphere_sampler -n 5000 -r 1.0 -s 42 -m naive      -o results/points_naive.dat
 python3 src/python/plot_sphere.py -i results/points.dat -o results/sphere.png
 python3 src/python/validate_uniformity.py \
   --equal-area results/points.dat \
@@ -102,19 +96,25 @@ python3 src/python/validate_uniformity.py \
   --radius 1.0
 ```
 
-## Design choices
+Requires a C11 compiler, `make`, and Python 3.10+ (`numpy`, `matplotlib`).
 
-- **Library vs. driver**: sampling lives in `sphere_sampler.c`; `main.c` only
-  handles arguments and exit codes.
-- **Two methods, one API**: `equal-area` (correct) and `naive` (biased) share
-  the same `PointCloud` path for fair comparison.
-- **Reproducibility**: optional RNG seed (`-s`) for deterministic clouds.
-- **Evidence, not only plots**: validation asserts radius fidelity and
-  \(\chi^2/\mathrm{dof}\) for \(u=z/R\).
-- **Loose coupling**: whitespace \(x\,y\,z\) files are the handoff between C
-  and Python—no shared runtime.
-- **Explicit artifacts**: generated results are gitignored; `examples/` keeps
-  stable visuals for the README.
+## Layout
+
+```
+include/sphere_sampler.h          Public C API (PointCloud)
+src/c/                            Sampler library + CLI
+src/python/plot_sphere.py         3D visualization
+src/python/validate_uniformity.py Radius + u=z/R checks
+examples/                         Story figures + sample data
+docs/                             Methodology and architecture
+.github/workflows/ci.yml          Build + smoke test
+```
+
+Design notes: [docs/architecture.md](docs/architecture.md).
+
+- Library vs. CLI stay separate; `--method equal-area|naive` shares one API.
+- Seeded portable RNG keeps clouds reproducible.
+- Whitespace \(x\,y\,z\) files couple C and Python without a shared runtime.
 
 ## License
 
