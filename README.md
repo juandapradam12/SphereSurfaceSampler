@@ -1,6 +1,6 @@
 # Uniform Point Sampling on a Sphere
 
-[![CI](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/Random-Distribution-Of-Points-Into-An-Sphere-Of-Arbitrary-Radius/actions/workflows/ci.yml)
+[![CI](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml/badge.svg)](https://github.com/juandapradam12/SphereSurfaceSampler/actions/workflows/ci.yml)
 
 A scientific-computing use case: draw points on a sphere of radius $R$ that
 are **uniform with respect to surface area**, show what goes wrong with a
